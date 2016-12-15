@@ -51,7 +51,7 @@ function checkForValidUrl(tabId, changeInfo, tab) {
 	if ( toLogin ) {
 		console.log("现在开始登录，登录信息为：");
 		console.log(loginMsg);
-		if( tab.url.toLowerCase() == loginMsg.url || tab.url.toLowerCase().indexOf(loginMsg.url+"?") != -1 ){
+		if( tab.url.toLowerCase() == loginMsg.url || tab.url.toLowerCase().indexOf(loginMsg.url) != -1 ){
 			//在登录页面中 将数据填入表单中 登录操作
 			chrome.pageAction.show(tabId);
 			sendMsgToLoginContent(tab);

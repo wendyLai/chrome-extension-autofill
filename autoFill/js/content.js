@@ -72,7 +72,7 @@ function selectUsernameInput(formElement){
 
 	for (var i = 0; i < inputList.length; i++) {
 
-		if ( inputList[i].getAttribute("type") == "text" ){
+		if ( inputList[i].getAttribute("type") == "text" || inputList[i].getAttribute("type") === null ){
 
 			if(	inputList[i].getAttribute("name").toLowerCase() .indexOf("username") != -1 
 				|| inputList[i].getAttribute("name").toLowerCase() .indexOf("account") != -1 
