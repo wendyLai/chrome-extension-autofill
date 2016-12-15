@@ -29,15 +29,29 @@ function getLoginValue(){
 	var usernameElement = document.getElementById("qt_username_input");
 	var pwdElement = document.getElementById("qt_password_input");
 
-	loginMsg.url = urlElement.getAttribute("value").replace(/^\s+|\s+$/g,"");
-	loginMsg.username = usernameElement.getAttribute("value").replace(/^\s+|\s+$/g,"");
-	loginMsg.password = pwdElement.getAttribute("value").replace(/^\s+|\s+$/g,"");
+	loginMsg.url = Trim(urlElement.getAttribute("value"),"g");
+	loginMsg.username = Trim(usernameElement.getAttribute("value"),"g");
+	loginMsg.password = Trim(pwdElement.getAttribute("value"),"g");
 
 	// console.log("======get url:",loginMsg.url,loginMsg.url.length);
 	// console.log("======get username:",loginMsg.username,loginMsg.username.length);
 	// console.log("======get password:",loginMsg.password,loginMsg.password.length);
 
 	return loginMsg;
+}
+
+//删除前后空格，删除全部空格第二个参数写g
+function Trim(str,is_global){
+
+	var result;
+
+	result = str.replace(/(^\s+)|(\s+$)/g,"");
+
+	if(is_global.toLowerCase()=="g"){
+		result = result.replace(/\s/g,"");
+	}
+
+	return result;
 }
 
 // todo 为空时的判断以及处理
@@ -62,6 +76,8 @@ function selectUsernameInput(formElement){
 
 			if(	inputList[i].getAttribute("name").toLowerCase() .indexOf("username") != -1 
 				|| inputList[i].getAttribute("name").toLowerCase() .indexOf("account") != -1 
+				|| inputList[i].getAttribute("name").toLowerCase() .indexOf("userid") != -1 
+				|| inputList[i].getAttribute("name").toLowerCase() .indexOf("user_name") != -1 
 				|| inputList[i].getAttribute("name").toLowerCase() .indexOf("email") != -1){
 
 				uNameInput =  inputList[i];
@@ -121,14 +137,72 @@ function selectLoginBtn(formElement){
 		return subBtn;
 	}
 
+	// 循环所有input查询type="button"的input
+	function selectInputBtnList(arr){
+		var inputBtnList = [];
+
+		for (var i = 0; i < arr.length; i++) {
+
+			if (arr[i].getAttribute("type") == "button"){
+				inputBtnList.push(arr[i]);
+			}
+		}
+
+		return inputBtnList;
+	}
+
+
+	// 循环所有btn/  input type="button" value="login"/"登录"
+	function selectLoginBtnInFromList(arr){
+		var subBtn = null;
+
+		for (var i = 0; i < arr.length; i++) {
+
+			if( arr[i].tagName.toLowerCase() == "button" ){
+				if (	Trim(arr[i].innerText,"g").indexOf("登录") != -1 
+					|| Trim(arr[i].innerText,"g").toLowerCase().indexOf("login") != -1 ){
+
+					subBtn = arr[i];
+					break;
+
+				}
+			}else if( arr[i].tagName.toLowerCase() == "input" ){
+				if (	Trim(arr[i].getAttribute("value"),"g") == "登录" 
+					|| Trim(arr[i].getAttribute("value"),"g").toLowerCase().indexOf("login") != -1 ){
+
+					subBtn = arr[i];
+					break;
+
+				}
+			}
+
+		}
+
+		return subBtn;
+	}
+
 	if( formChildElement != null ){
 
 		inputList = formChildElement.getElementsByTagName("input");
+		btnList = formChildElement.getElementsByTagName("button");
+
+		// 查询 input type=“submit”的第一项
 		submitBtn = selectSubmitBtnFromList(inputList);
 
+		// 查询 button type=“submit”的第一项
 		if( submitBtn == null ){
-			btnList = formChildElement.getElementsByTagName("button");
 			submitBtn = selectSubmitBtnFromList(btnList);
+		}
+
+		// 查询 input type="button" 中value包含"login"/”登录“的第一项
+		if( submitBtn == null ){
+			inputList = selectInputBtnList(inputList);
+			submitBtn = selectLoginBtnInFromList(inputList);
+		}
+			
+		// 查询 button标签文本包含"login"/”登录“的第一项
+		if (  submitBtn == null ) {
+			submitBtn = selectLoginBtnInFromList(btnList);
 		}
 
 	}else{
@@ -139,6 +213,15 @@ function selectLoginBtn(formElement){
 		if( submitBtn == null ){
 			btnList = document.getElementsByTagName("button");
 			submitBtn = selectSubmitBtnFromList(btnList);
+		}
+
+		if( submitBtn == null ){
+			inputList = selectInputBtnList(inputList);
+			submitBtn = selectLoginBtnInFromList(inputList);
+		}
+			
+		if (  submitBtn == null ) {
+			submitBtn = selectLoginBtnInFromList(btnList);
 		}
 
 	}
@@ -184,7 +267,7 @@ function selectLoginForm(pwdElement){
 //填充表单并提交
 function onFillForm(username,password){
 
-	console.log("==username==",username,"==password===",password);
+	// console.log("==username==",username,"==password===",password);
 
 	//得到pwd input
 	var passwordInput = selectPwdInput();
@@ -205,15 +288,15 @@ function onFillForm(username,password){
 
 	// 给元素填充值
 	if( userNameInput != null ){
-		userNameInput.setAttribute("value", username);
-		passwordInput.value = username;
+		userNameInput.value=username;
 	}
 
 	if( passwordInput != null ){
-		passwordInput.setAttribute("value", password);
+		passwordInput.value=password;
 	}
 
 	// 触发登录事件
+	console.log("==登录用户名==",userNameInput.getAttribute("value"),"==登录密码===",passwordInput.getAttribute("value"));
 	if( submitForm != null ){
 
 		if( submitButton != null ){
