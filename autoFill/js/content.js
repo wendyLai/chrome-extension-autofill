@@ -1,10 +1,45 @@
+
+/* **************************常亮以及通用方法***************************************** */
+
 //登录次数 连续登录5此不成功则取消登录
 var loginCount = 0; //todo 暂不支持
 
 // 只填充表单不自动提交清单
 var unAutoSubmitUrlList = [
 	"https://login.taobao.com/member/login.jhtml",
+	"https://passport.jd.com/new/login.aspx"
 ];
+
+//删除前后空格，删除全部空格第二个参数写g
+function Trim(str,is_global){
+
+	var result;
+
+	result = str.replace(/(^\s+)|(\s+$)/g,"");
+
+	if(is_global.toLowerCase()=="g"){
+		result = result.replace(/\s/g,"");
+	}
+
+	return result;
+}
+
+//报错处理
+function alertErrorDialog(status){
+	switch (status){
+		case "unautosubmit":
+			alert("暂不支持该网站的自动提交功能，请手动点击按钮选择登录。");
+			break;
+		case "unautofill":
+			alert("暂不支持该网站的自动填充功能，请手动输入登录。");
+			break;	
+		default:
+			break;
+	}
+
+}
+
+/* **************************和backgroundJS文件传送数据***************************************** */
 
 //接收或发送数据
 chrome.runtime.onMessage.addListener(
@@ -20,6 +55,8 @@ chrome.runtime.onMessage.addListener(
 		}
 	}
 );
+
+/* **************************在缓冲页面获取登录数据***************************************** */
 
 // 获取岂同缓冲页面的数据
 function getLoginValue(){
@@ -45,22 +82,7 @@ function getLoginValue(){
 	return loginMsg;
 }
 
-//删除前后空格，删除全部空格第二个参数写g
-function Trim(str,is_global){
-
-	var result;
-
-	result = str.replace(/(^\s+)|(\s+$)/g,"");
-
-	if(is_global.toLowerCase()=="g"){
-		result = result.replace(/\s/g,"");
-	}
-
-	return result;
-}
-
-// todo 为空时的判断以及处理
-//  input经常无法准确匹配
+/* **************************在要登录的网站填充表单自动登录***************************************** */
 
 //选择用户名输入框
 function selectUsernameInput(formElement){
@@ -80,6 +102,7 @@ function selectUsernameInput(formElement){
 		if ( inputList[i].getAttribute("type") == "text" || inputList[i].getAttribute("type") === null ){
 
 			if(	inputList[i].getAttribute("name").toLowerCase() .indexOf("username") != -1 
+				|| inputList[i].getAttribute("name").toLowerCase() .indexOf("loginname") != -1 
 				|| inputList[i].getAttribute("name").toLowerCase() .indexOf("account") != -1 
 				|| inputList[i].getAttribute("name").toLowerCase() .indexOf("userid") != -1 
 				|| inputList[i].getAttribute("name").toLowerCase() .indexOf("user_name") != -1 
@@ -307,12 +330,19 @@ function onFillForm(username,password,url){
 		passwordInput.value=password;
 	}
 
+	if( userNameInput == null || passwordInput == null  ){
+		console.log(url,"该网站不支持自动填充，找不到表单元素。");
+		alertErrorDialog("unautofill");
+		return;
+	}
+
 	// console.log("==登录用户名==",userNameInput.getAttribute("value"),"==登录密码===",passwordInput.getAttribute("value"));
 	
 	// 剔除不需要自动提交的网站
 	for (var i = 0; i < unAutoSubmitUrlList.length; i++) {
 		if(  url == unAutoSubmitUrlList[i] ){
 			console.log(url,"该网站不需要自动提交。");
+			alertErrorDialog("unautosubmit");
 			return;
 		}
 	}
