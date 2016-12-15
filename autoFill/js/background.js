@@ -13,7 +13,7 @@ var toLogin = false;
 
 //将用户名密码发送到content中(页面元素属性才能被赋值)
 function sendMsgToLoginContent(tab){
-	chrome.tabs.sendMessage(tab.id, {username: loginMsg.username, password: loginMsg.password}, function(response) {
+	chrome.tabs.sendMessage(tab.id, {username: loginMsg.username, password: loginMsg.password, url: loginMsg.url}, function(response) {
 
 		if( response !== undefined ){
 			console.log("接收到登录数据:",response);
@@ -49,8 +49,8 @@ function checkForValidUrl(tabId, changeInfo, tab) {
 	}
 
 	if ( toLogin ) {
-		console.log("现在开始登录，登录信息为：");
-		console.log(loginMsg);
+		// console.log("现在开始登录，登录信息为：");
+		// console.log(loginMsg);
 		if( tab.url.toLowerCase() == loginMsg.url || tab.url.toLowerCase().indexOf(loginMsg.url) != -1 ){
 			//在登录页面中 将数据填入表单中 登录操作
 			chrome.pageAction.show(tabId);

@@ -1,5 +1,10 @@
 //登录次数 连续登录5此不成功则取消登录
-var loginCount = 0;
+var loginCount = 0; //todo 暂不支持
+
+// 只填充表单不自动提交清单
+var unAutoSubmitUrlList = [
+	"https://login.taobao.com/member/login.jhtml",
+];
 
 //接收或发送数据
 chrome.runtime.onMessage.addListener(
@@ -8,7 +13,7 @@ chrome.runtime.onMessage.addListener(
 		if( msg.username !== undefined ){
 			//拿到username password数据并填写提交表单
 			sendResponse("yes");
-			onFillForm(msg.username, msg.password);
+			onFillForm(msg.username, msg.password, msg.url);
 		}else{
 			//获取岂同缓冲页码的username password url并返回到插件background.js中
 			sendResponse(getLoginValue());
@@ -120,6 +125,7 @@ function selectLoginBtn(formElement){
 
 	var inputList = null;
 	var btnList = null;
+	var aList =  null;
 	var submitBtn=null;
 
 	// 循环所有btn/ input查询type="submit"的btn
@@ -158,7 +164,7 @@ function selectLoginBtn(formElement){
 
 		for (var i = 0; i < arr.length; i++) {
 
-			if( arr[i].tagName.toLowerCase() == "button" ){
+			if( arr[i].tagName.toLowerCase() == "button" || arr[i].tagName.toLowerCase() == "a" ){
 				if (	Trim(arr[i].innerText,"g").indexOf("登录") != -1 
 					|| Trim(arr[i].innerText,"g").toLowerCase().indexOf("login") != -1 ){
 
@@ -185,6 +191,7 @@ function selectLoginBtn(formElement){
 
 		inputList = formChildElement.getElementsByTagName("input");
 		btnList = formChildElement.getElementsByTagName("button");
+		aList = formChildElement.getElementsByTagName("a");
 
 		// 查询 input type=“submit”的第一项
 		submitBtn = selectSubmitBtnFromList(inputList);
@@ -203,6 +210,11 @@ function selectLoginBtn(formElement){
 		// 查询 button标签文本包含"login"/”登录“的第一项
 		if (  submitBtn == null ) {
 			submitBtn = selectLoginBtnInFromList(btnList);
+		}
+
+		// 查询 button标签文本包含"login"/”登录“的第一项
+		if (  submitBtn == null ) {
+			submitBtn = selectLoginBtnInFromList(aList);
 		}
 
 	}else{
@@ -265,7 +277,7 @@ function selectLoginForm(pwdElement){
 }
 
 //填充表单并提交
-function onFillForm(username,password){
+function onFillForm(username,password,url){
 
 	// console.log("==username==",username,"==password===",password);
 
@@ -295,8 +307,17 @@ function onFillForm(username,password){
 		passwordInput.value=password;
 	}
 
+	// console.log("==登录用户名==",userNameInput.getAttribute("value"),"==登录密码===",passwordInput.getAttribute("value"));
+	
+	// 剔除不需要自动提交的网站
+	for (var i = 0; i < unAutoSubmitUrlList.length; i++) {
+		if(  url == unAutoSubmitUrlList[i] ){
+			console.log(url,"该网站不需要自动提交。");
+			return;
+		}
+	}
+	
 	// 触发登录事件
-	console.log("==登录用户名==",userNameInput.getAttribute("value"),"==登录密码===",passwordInput.getAttribute("value"));
 	if( submitForm != null ){
 
 		if( submitButton != null ){
