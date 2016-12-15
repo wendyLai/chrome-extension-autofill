@@ -218,7 +218,7 @@ function onFillForm(username,password){
 
 		if( submitButton != null ){
 			console.log("按钮提交表单");
-			// submitButton.click();
+			submitButton.click();
 			return;
 		}
 
