@@ -9,7 +9,7 @@ var loginMsg = {
 var pageSkipSrc =  "/swa/sso/post/";
 
 //用于阻止本地刷新登录
-var toLoginCount = 0;
+var curStatus = "togetmsg"; // togetmsg → tofillmsg → tologin
 
 //将用户名密码发送到content中(页面元素属性才能被赋值)
 function sendMsgToLoginContent(tab){
@@ -17,7 +17,7 @@ function sendMsgToLoginContent(tab){
 
 		if( response !== undefined ){
 			console.log("接收到登录数据:",response);
-			toLoginCount = 0;
+			curStatus="tologin"
 		}else{
 			console.log("接收登录数据中......");
 		}
@@ -28,11 +28,21 @@ function sendMsgToLoginContent(tab){
 //从岂同页面中获取到我们需要的用户名密码url数据
 function getLoginMsgFormQt(tab){
 	chrome.tabs.sendMessage(tab.id, {}, function(response) {
-		// console.log("拿到登录数据了吗？",response.url,response.username,response.password);
-		loginMsg.url = response.url;
-		loginMsg.username = response.username;
-		loginMsg.password = response.password;
-		toLoginCount++;
+		console.log("拿到登录数据了吗？",response.url,response.username,response.password);
+
+		if( response.url != null ){
+			loginMsg.url = response.url;
+		}
+		if( response.username != null ){
+			loginMsg.username = response.username;
+		}
+		if( response.password != null ){
+			loginMsg.password = response.password;
+		}
+
+		if( loginMsg.url != null && loginMsg.username != null && loginMsg.password != null ){
+			curStatus = "tofillmsg";
+		}
 	});
 }
 
@@ -40,7 +50,7 @@ function getLoginMsgFormQt(tab){
 function checkForValidUrl(tabId, changeInfo, tab) {
 	// console.log("tabId=",tabId,"changeInfo=",changeInfo,"tab=",tab,"\n","==cabbage===",tab.url.toLowerCase().indexOf("http://qq.cabbage.com/")!=-1);
 
-	console.log("toLoginCount=",toLoginCount);
+	console.log("curStatus=",curStatus);
 	
 	if( tab.url.toLowerCase().indexOf(pageSkipSrc) != -1 ){
 
@@ -50,9 +60,9 @@ function checkForValidUrl(tabId, changeInfo, tab) {
 
 	}
 
-	if ( toLoginCount == 1 ) {
-		// console.log("现在开始登录，登录信息为：");
-		// console.log(loginMsg);
+	if ( curStatus == "tofillmsg" ) {
+		console.log("现在开始登录，登录信息为：");
+		console.log(loginMsg);
 		if( tab.url.toLowerCase() == loginMsg.url || tab.url.toLowerCase().indexOf(loginMsg.url) != -1 ){
 			//在登录页面中 将数据填入表单中 登录操作
 			chrome.pageAction.show(tabId);
