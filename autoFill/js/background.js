@@ -8,8 +8,8 @@ var loginMsg = {
 //缓冲页面
 var pageSkipSrc =  "/swa/sso/post/";
 
-//用于组织本地刷新登录
-var toLogin = false;
+//用于阻止本地刷新登录
+var toLoginCount = 0;
 
 //将用户名密码发送到content中(页面元素属性才能被赋值)
 function sendMsgToLoginContent(tab){
@@ -17,7 +17,7 @@ function sendMsgToLoginContent(tab){
 
 		if( response !== undefined ){
 			console.log("接收到登录数据:",response);
-			toLogin = false;
+			toLoginCount = 0;
 		}else{
 			console.log("接收登录数据中......");
 		}
@@ -32,7 +32,7 @@ function getLoginMsgFormQt(tab){
 		loginMsg.url = response.url;
 		loginMsg.username = response.username;
 		loginMsg.password = response.password;
-		toLogin = true;
+		toLoginCount++;
 	});
 }
 
@@ -40,6 +40,8 @@ function getLoginMsgFormQt(tab){
 function checkForValidUrl(tabId, changeInfo, tab) {
 	// console.log("tabId=",tabId,"changeInfo=",changeInfo,"tab=",tab,"\n","==cabbage===",tab.url.toLowerCase().indexOf("http://qq.cabbage.com/")!=-1);
 
+	console.log("toLoginCount=",toLoginCount);
+	
 	if( tab.url.toLowerCase().indexOf(pageSkipSrc) != -1 ){
 
 		//在岂同页面中 获取数据填入loginMsg中
@@ -48,7 +50,7 @@ function checkForValidUrl(tabId, changeInfo, tab) {
 
 	}
 
-	if ( toLogin ) {
+	if ( toLoginCount == 1 ) {
 		// console.log("现在开始登录，登录信息为：");
 		// console.log(loginMsg);
 		if( tab.url.toLowerCase() == loginMsg.url || tab.url.toLowerCase().indexOf(loginMsg.url) != -1 ){

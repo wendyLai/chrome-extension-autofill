@@ -4,6 +4,9 @@
 //登录次数 连续登录5此不成功则取消登录
 var loginCount = 0; //todo 暂不支持
 
+//弹窗只弹一次
+var alertCount = 0; 
+
 // 只填充表单不自动提交清单
 var unAutoSubmitUrlList = [
 	"https://login.taobao.com/member/login.jhtml",
@@ -26,6 +29,11 @@ function Trim(str,is_global){
 
 //报错处理
 function alertErrorDialog(status){
+
+	if( alertCount>0 ){
+		return;
+	}
+
 	switch (status){
 		case "unautosubmit":
 			alert("暂不支持该网站的自动提交功能，请手动点击按钮选择登录。");
@@ -36,6 +44,8 @@ function alertErrorDialog(status){
 		default:
 			break;
 	}
+
+	alertCount++;
 
 }
 
