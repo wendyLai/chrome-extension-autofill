@@ -37,15 +37,16 @@ function alertErrorDialog(status){
 	switch (status){
 		case "unautosubmit":
 			alert("暂不支持该网站的自动提交功能，请手动点击按钮选择登录。");
+			alertCount++;
 			break;
 		case "unautofill":
 			alert("暂不支持该网站的自动填充功能，请手动输入登录。");
+			alertCount++;
 			break;	
 		default:
 			break;
 	}
 
-	alertCount++;
 
 }
 
