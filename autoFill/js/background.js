@@ -8,8 +8,13 @@ var loginMsg = {
 //缓冲页面
 var pageSkipSrc =  "/swa/sso/post/";
 
-//用于阻止本地刷新登录
+//用于允许二次登录
 var loginCount = null;
+
+//允许二次(多次？)登录的网址列表
+var repeatLoginUrl = [
+	"https://mail.people2000.net/owa/auth/logon.aspx",
+];
 
 //保存流程状态
 var curStatus = "togetmsg"; // togetmsg → tofillmsg → tologin
@@ -59,10 +64,9 @@ function getLoginMsgFormQt(tab){
 function checkForValidUrl(tabId, changeInfo, tab) {
 	// console.log("tabId=",tabId,"changeInfo=",changeInfo,"tab=",tab,"\n","==cabbage===",tab.url.toLowerCase().indexOf("http://qq.cabbage.com/")!=-1);
 
-	console.log("****************************************************************8");
-	// console.log("开始监听=状态为===",curStatus);
-	// console.log("开始监听=登录次数为===",loginCount);	
+	console.log("****************************************************************");
 
+	// 当前地址为缓冲页面地址时，获取登录数据
 	if( tab.url.toLowerCase().indexOf(pageSkipSrc) != -1 ){
 
 		//在岂同页面中 获取数据填入loginMsg中
@@ -71,17 +75,25 @@ function checkForValidUrl(tabId, changeInfo, tab) {
 
 	}
 
-	//允许第二次登录
+	//允许第二次登录的网址，将它第二次登录的状态设置为“tofillmsg”
+	if( loginCount == 1 ){
+		for (var i = 0; i < repeatLoginUrl.length; i++) {
+			if( repeatLoginUrl[i] == loginMsg.url ){
+				console.log("去再次登录");
+				curStatus = "tofillmsg";
+			}
+		}
+	}
+	
+	// 当前地址为目标登录网址时，去填充表单并登录
 	if ( curStatus == "tofillmsg" ) {
 		console.log("现在发送数据到登录页面，并开始填充表单");
+
 		if( tab.url.toLowerCase() == loginMsg.url || tab.url.toLowerCase().indexOf(loginMsg.url) != -1 ){
 			//在登录页面中 将数据填入表单中 登录操作
 			chrome.pageAction.show(tabId);
 			sendMsgToLoginContent(tab);
 		}
-	}else if( loginCount == 1 ){
-		console.log("再次登录");
-		curStatus = "tofillmsg";
 	}
 
 };
